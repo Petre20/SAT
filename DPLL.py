@@ -94,4 +94,4 @@ def rezolva_dpll(nume_fisier):
     print(f"Numar apeluri recursive: {contor_recursie[0]}")
     return "Satisfiabila" if rezultat is not None else "Nesatisfiabila"
 
-print(rezolva_dpll("test.cnf"))
+print(rezolva_dpll("test1.cnf"))
