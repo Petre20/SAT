@@ -76,7 +76,7 @@ def rezolutie_sat(clauze, max_iteratii=10000):
         multime_clauze.update(clauze_noi)
         clauze_noi = set()
 
-clauze = citeste_cnf('test.cnf')
+clauze = citeste_cnf('test1.cnf')
 
 start = time.perf_counter()
 rezultat = rezolutie_sat(clauze)
