@@ -136,4 +136,4 @@ def rezolva_dp(nume_fisier):
     print(f"Clauze generate: {numar_clauze_generate}")
     return "Satisfiabila" if rezultat else "Nesatisfiabila"
 
-print(rezolva_dp('test.cnf'))
+print(rezolva_dp('test1.cnf'))
