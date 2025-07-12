@@ -39,7 +39,7 @@ class SATSolver:
         
         return clauze_dp, clauze_dpll, clauze_resolution
     
-    # ===== ALGORITM DAVIS-PUTNAM CORECTAT =====
+    # ===== ALGORITM DAVIS-PUTNAM =====
     def este_tautologie(self, clauza):
         """Verifică dacă clauza este tautologie (conține p și -p)"""
         literali = set(clauza) if isinstance(clauza, (list, tuple)) else clauza
@@ -68,7 +68,7 @@ class SATSolver:
             modificat = False
             clauze_noi = []
             
-            # Găsește clausele unitare
+            # Gaseste clausele unitare
             unitati = []
             for clauza in clauze:
                 if len(clauza) == 1:
@@ -79,23 +79,23 @@ class SATSolver:
             if not unitati:
                 break
             
-            # Aplică propagarea pentru fiecare literal unitar
+            # Aplica propagarea pentru fiecare literal unitar
             for unitate in unitati:
                 temp_clauze = []
                 
                 for clauza in clauze_noi:
                     if unitate in clauza:
-                        # Clauza este satisfăcută, o eliminăm
+                        # Clauza este satisfăcuta, o eliminăm
                         continue
                     elif -unitate in clauza:
-                        # Eliminăm literalul din clauză
+                        # Eliminam literalul din clauza
                         clauza_noua = clauza - {-unitate}
                         if not clauza_noua:
-                            # Clauza goală - conflict
+                            # Clauza goala - conflict
                             return None, True
                         temp_clauze.append(clauza_noua)
                     else:
-                        # Clauza nu este afectată
+                        # Clauza nu este afectata
                         temp_clauze.append(clauza)
                 
                 clauze_noi = temp_clauze
@@ -111,7 +111,7 @@ class SATSolver:
         clauze_negative = []
         clauze_neutrale = []
         
-        # Separăm clausele în funcție de apariția variabilei
+        # Separam clausele în functie de aparitia variabilei
         for clauza in clauze:
             if var in clauza:
                 clauze_pozitive.append(clauza)
@@ -120,31 +120,31 @@ class SATSolver:
             else:
                 clauze_neutrale.append(clauza)
         
-        # Începem cu clausele care nu conțin variabila
+        # Incepem cu clauzele care nu contin variabila
         clauze_rezultate = set(clauze_neutrale)
         
-        # Dacă nu avem ambele tipuri de clauze, păstrăm toate clausele
+        # Daca nu avem ambele tipuri de clauze, pastram toate clauzele
         if not clauze_pozitive or not clauze_negative:
-            # Dacă avem doar clauze pozitive sau doar negative, păstrăm toate
+            # Daca avem doar clauze pozitive sau doar negative, pastram toate
             clauze_rezultate.update(clauze_pozitive)
             clauze_rezultate.update(clauze_negative)
             return list(clauze_rezultate)
         
-        # Generăm rezolventele între clausele pozitive și negative
+        # Generam rezolventele intre clausele pozitive si negative
         for clauza_poz in clauze_pozitive:
             for clauza_neg in clauze_negative:
                 # Rezolventa = (clauza_poz - {var}) ∪ (clauza_neg - {-var})
                 rezolventa = (clauza_poz - {var}) | (clauza_neg - {-var})
                 
-                # Dacă rezolventa este goală, avem o contradicție
+                # Daca rezolventa este goala, avem o contradictie
                 if len(rezolventa) == 0:
-                    return [frozenset()]  # Clauza goală
+                    return [frozenset()]  # Clauza goala
                 
-                # Verificăm dacă rezolventa este tautologie
+                # Verificam daca rezolventa este tautologie
                 if not self.este_tautologie(rezolventa):
                     clauze_rezultate.add(rezolventa)
         
-        # Eliminăm subsumțiile
+        # Eliminam subsumtiile
         clauze_finale = []
         lista_rezultate = list(clauze_rezultate)
         
@@ -161,28 +161,28 @@ class SATSolver:
     
     def algoritm_dp(self, clauze):
         """Algoritmul Davis-Putnam corectat"""
-        # Eliminăm tautologiile
+        # Eliminam tautologiile
         clauze = [c for c in clauze if not self.este_tautologie(c)]
         
-        # Cazul de bază: mulțimea goală de clauze
+        # Cazul de baza: multimea goala de clauze
         if not clauze:
             return True
         
-        # Cazul de bază: există clauza goală
+        # Cazul de baza: există clauza goala
         if any(len(c) == 0 for c in clauze):
             return False
         
-        # Aplicăm propagarea unitară
+        # Aplicam propagarea unitara
         clauze, satisfiabila = self.propagare_unitara(clauze)
-        if clauze is None:  # Conflict în propagarea unitară
+        if clauze is None:  # Conflict in propagarea unitara
             return False
-        if satisfiabila:  # Nu mai sunt clauze - satisfiabilă
+        if satisfiabila:  # Nu mai sunt clauze - satisfiabila
             return True
         
-        # Eliminăm literalii puri
+        # Eliminam literalii puri
         literali_puri = self.eliminare_literal_pur(clauze)
         if literali_puri:
-            # Eliminăm toate clausele care conțin literali puri
+            # Eliminam toate clausele care contin literali puri
             clauze_filtrate = []
             for clauza in clauze:
                 if not any(lit in clauza for lit in literali_puri):
@@ -190,7 +190,7 @@ class SATSolver:
             self.stats['dp_clauses_generated'] += len(clauze_filtrate)
             return self.algoritm_dp(clauze_filtrate)
         
-        # Alegem o variabilă pentru eliminare
+        # Alegem o variabila pentru eliminare
         toate_var = set()
         for clauza in clauze:
             for lit in clauza:
@@ -199,7 +199,7 @@ class SATSolver:
         if not toate_var:
             return True
         
-        # Alegem variabila care apare în cele mai multe clauze (euristica îmbunătățită)
+        # Alegem variabila care apare in cele mai multe clauze (euristica imbunatatita)
         contor_var = {}
         for var in toate_var:
             contor_var[var] = 0
@@ -209,7 +209,7 @@ class SATSolver:
         
         var = max(contor_var, key=contor_var.get)
         
-        # Eliminăm variabila prin rezoluție
+        # Eliminam variabila prin rezolutie
         clauze_noi = self.eliminare_variabila(clauze, var)
         self.stats['dp_clauses_generated'] += len(clauze_noi)
         
@@ -217,7 +217,7 @@ class SATSolver:
     
     # ===== ALGORITM DPLL =====
     def simplifica_clauze(self, clauze, atribuire):
-        """Simplifică clausele pe baza atribuirii curente"""
+        """Simplifica clausele pe baza atribuirii curente"""
         clauze_noi = []
         
         for clauza in clauze:
@@ -226,16 +226,16 @@ class SATSolver:
             
             for literal in clauza:
                 if literal in atribuire:
-                    # Literalul este adevărat, deci clauza este satisfăcută
+                    # Literalul este adevarat, deci clauza este satisfăcuta
                     clauza_satisfacuta = True
                     break
                 elif -literal not in atribuire:
-                    # Literalul nu este încă atribuit
+                    # Literalul nu este inca atribuit
                     clauza_noua.append(literal)
             
             if not clauza_satisfacuta:
                 if not clauza_noua:
-                    # Clauza goală - conflict
+                    # Clauza goala - conflict
                     return None
                 clauze_noi.append(clauza_noua)
         
@@ -266,31 +266,31 @@ class SATSolver:
         """Algoritmul DPLL"""
         self.stats['dpll_recursive_calls'] += 1
         
-        # Simplifică clausele pe baza atribuirii curente
+        # Simplifica clauzele pe baza atribuirii curente
         clauze_simplificate = self.simplifica_clauze(clauze, atribuire)
         
-        # Verifică conflictul (clauza goală)
+        # Verifica conflictul (clauza goala)
         if clauze_simplificate is None:
             return None
         
-        # Verifică satisfiabilitatea (nu mai sunt clauze)
+        # Verifica satisfiabilitatea (nu mai sunt clauze)
         if not clauze_simplificate:
             return atribuire
         
-        # Propagarea unitară
+        # Propagarea unitara
         while True:
             literali_unitari = self.gaseste_literali_unitari(clauze_simplificate)
             if not literali_unitari:
                 break
             
-            # Adaugă literalii unitari la atribuire
+            # Adauga literalii unitari la atribuire
             for literal in literali_unitari:
                 if -literal in atribuire:
-                    # Conflict: avem și literal și -literal
+                    # Conflict: avem si literal si -literal
                     return None
                 atribuire.add(literal)
             
-            # Simplifică din nou cu noua atribuire
+            # Simplifica din nou cu noua atribuire
             clauze_simplificate = self.simplifica_clauze(clauze_simplificate, atribuire)
             
             if clauze_simplificate is None:
@@ -303,11 +303,11 @@ class SATSolver:
         if literali_puri:
             for literal in literali_puri:
                 if -literal in atribuire:
-                    # Conflict: avem și literal și -literal
+                    # Conflict: avem si literal si -literal
                     return None
                 atribuire.add(literal)
             
-            # Simplifică din nou cu noua atribuire
+            # Simplifica din nou cu noua atribuire
             clauze_simplificate = self.simplifica_clauze(clauze_simplificate, atribuire)
             
             if clauze_simplificate is None:
@@ -326,22 +326,22 @@ class SATSolver:
         if not variabile_neatribuite:
             return atribuire
         
-        # Alege prima variabilă disponibilă
+        # Alege prima variabila disponibila
         var = min(variabile_neatribuite)
         
-        # Încearcă prima ramură (var = True)
+        # Incearca prima ramura (var = True)
         noua_atribuire = atribuire.copy()
         noua_atribuire.add(var)
         rezultat = self.dpll(clauze, noua_atribuire)
         if rezultat is not None:
             return rezultat
         
-        # Încearcă a doua ramură (var = False)
+        # Incearca a doua ramura (var = False)
         noua_atribuire = atribuire.copy()
         noua_atribuire.add(-var)
         return self.dpll(clauze, noua_atribuire)
     
-    # ===== ALGORITM REZOLUȚIE =====
+    # ===== ALGORITM REZOLUTIE =====
     def este_tautologie_resolution(self, clauza):
         """Verifică dacă clauza este tautologie"""
         literali = set(clauza)
@@ -351,33 +351,33 @@ class SATSolver:
         return False
     
     def rezolva(self, c1, c2):
-        """Calculează rezolventa între două clauze"""
-        # Găsește toate perechile de literali complementari
+        """Calculeaza rezolventa intre doua clauze"""
+        # Gaseste toate perechile de literali complementari
         perechi_complementare = []
         for lit in c1:
             if -lit in c2:
                 perechi_complementare.append(lit)
         
-        # Rezoluția funcționează doar dacă există exact o pereche complementară
+        # Rezolutia functionează doar dacă exista exact o pereche complementara
         if len(perechi_complementare) != 1:
             return []
         
         lit = perechi_complementare[0]
         rezolvent = (c1 - {lit}) | (c2 - {-lit})
         
-        # Verificăm dacă rezolventa este tautologie
+        # Verificam daca rezolventa este tautologie
         if self.este_tautologie_resolution(rezolvent):
             return []
         
         return [frozenset(rezolvent)]
     
     def rezolutie_sat(self, clauze, max_iteratii=10000):
-        """Algoritmul de rezoluție pentru SAT"""
-        # Convertim toate clausele la frozenset și eliminăm tautologiile
+        """Algoritmul de rezolutie pentru SAT"""
+        # Convertim toate clauzele la frozenset si eliminam tautologiile
         clauze = [frozenset(clauza) for clauza in clauze]
         clauze = [c for c in clauze if not self.este_tautologie_resolution(c)]
         
-        # Verificăm dacă există deja clauza goală
+        # Verificam daca exista deja clauza goala
         if any(len(c) == 0 for c in clauze):
             return False
         
@@ -393,7 +393,7 @@ class SATSolver:
             clauze_noi = set()
             lista_clauze = list(multime_clauze)
             
-            # Încearcă să rezolve fiecare pereche de clauze
+            # Incearca sa rezolve fiecare pereche de clauze
             for i in range(len(lista_clauze)):
                 for j in range(i + 1, len(lista_clauze)):
                     c1 = lista_clauze[i]
@@ -402,18 +402,18 @@ class SATSolver:
                     rezolventi = self.rezolva(c1, c2)
                     for rez in rezolventi:
                         if len(rez) == 0:
-                            # Am găsit clauza goală - formula este UNSAT
+                            # Am gasit clauza goala - formula este UNSAT
                             return False
                         
                         if rez not in multime_clauze:
                             clauze_noi.add(rez)
                             self.stats['resolution_clauses_generated'] += 1
             
-            # Dacă nu am generat clauze noi, algoritmul se oprește
+            # Daca nu am generat clauze noi, algoritmul se opreste
             if not clauze_noi:
                 return True
             
-            # Adăugăm clausele noi la mulțimea existentă
+            # Adaugam clauzele noi la multimea existenta
             multime_clauze.update(clauze_noi)
     
     def rezolva_toate(self, nume_fisier):
@@ -423,7 +423,7 @@ class SATSolver:
         
         clauze_dp, clauze_dpll, clauze_resolution = self.citeste_cnf(nume_fisier)
         
-        # Resetează statisticile
+        # Reseteaza statisticile
         self.stats = {
             'dp_clauses_generated': 0,
             'dpll_recursive_calls': 0,
@@ -432,7 +432,7 @@ class SATSolver:
         
         # DPLL
         print("1. DPLL")
-        # Măsurarea inițială
+        # Masurarea initiala
         mem_initial = self.get_memory_usage()
         cpu_initial = self.get_cpu_times()
         
@@ -440,7 +440,7 @@ class SATSolver:
         rezultat_dpll = self.dpll(clauze_dpll, set())
         end = time.perf_counter()
         
-        # Măsurarea finală
+        # Masurarea finala
         mem_final = self.get_memory_usage()
         cpu_final = self.get_cpu_times()
         
@@ -452,7 +452,7 @@ class SATSolver:
         
         # Davis-Putnam
         print("\n2. DAVIS-PUTNAM")
-        # Măsurarea inițială
+        # Masurarea initiala
         mem_initial = self.get_memory_usage()
         cpu_initial = self.get_cpu_times()
         
@@ -460,7 +460,7 @@ class SATSolver:
         rezultat_dp = self.algoritm_dp(clauze_dp)
         end = time.perf_counter()
         
-        # Măsurarea finală
+        # Masurarea finala
         mem_final = self.get_memory_usage()
         cpu_final = self.get_cpu_times()
         
@@ -470,9 +470,9 @@ class SATSolver:
         print(f"   Memorie folosita: {mem_final - mem_initial:.2f} MB (peak: {mem_final:.2f} MB)")
         print(f"   CPU utilizat: {cpu_final - cpu_initial:.6f} secunde")
         
-        # Rezoluție
+        # Rezolutie
         print("\n3. REZOLUȚIE")
-        # Măsurarea inițială
+        # Masurarea initiala
         mem_initial = self.get_memory_usage()
         cpu_initial = self.get_cpu_times()
         
@@ -480,7 +480,7 @@ class SATSolver:
         rezultat_resolution = self.rezolutie_sat(clauze_resolution)
         end = time.perf_counter()
         
-        # Măsurarea finală
+        # Masurarea finala
         mem_final = self.get_memory_usage()
         cpu_final = self.get_cpu_times()
         
@@ -506,7 +506,7 @@ class SATSolver:
 if __name__ == "__main__":
     solver = SATSolver()
     
-    # Înlocuiește cu numele fișierului tău CNF
+    # Inlocuieste cu numele fișierului tau CNF
     nume_fisier = "teste/test8.cnf"
     
     try:
